@@ -1,10 +1,13 @@
 package com.inzaa.iot.config;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,9 +48,11 @@ public class GlobalControllerExceptionHandler {
 		String object = validationResult.getObjectName();
 		ErrorResponse response = new ErrorResponse("RESOURCE_NOT_VALID",
 				"Validation error: " + object + " is not valid. ");
-		validationResult.getFieldErrors().stream().forEach(error -> response.addCause("Invalid " + error.getField(),
-				StringUtils.capitalize(error.getField() + " " + error.getDefaultMessage())));
-
+		List<FieldError> fieldErrors = validationResult.getFieldErrors();
+		for (FieldError fieldError : fieldErrors) {
+			response.addCause("Invalid " + fieldError.getField(),
+					StringUtils.capitalize(fieldError.getField() + " " + fieldError.getDefaultMessage()));
+		}
 		LOGGER.info("BAD_REQUEST:", e);
 		return response;
 	}
